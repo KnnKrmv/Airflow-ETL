@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+  postgresql:
+    image: postgres:13
+    container_name: postgres
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflowdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  airflow:
+    image: bitnami/airflow:2
+    container_name: airflow
+    ports:
+      - "8080:8080"
+    environment:
+      - BITNAMI_DEBUG=true
+      - AIRFLOW_DATABASE_NAME=airflowdb
+      - AIRFLOW_DATABASE_USERNAME=airflow
+      - AIRFLOW_DATABASE_PASSWORD=airflow
+      - AIRFLOW_DATABASE_HOST=postgresql
+
+    volumes:
+      - ./dags:/opt/bitnami/airflow/dags
+      - ./data:/opt/bitnami/airflow/data
+    depends_on:
+      - postgresql
+
+volumes:
+  postgres_data:
