@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+
+  mssql:
+    container_name: mssql
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    environment:
+      SA_PASSWORD: "Kanan#999!"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+
+  postgresql:
+    image: postgres:13
+    container_name: postgresql
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflowdb
+    ports:
+      - "5432:5432"
+    restart: always
+
+  airflow:
+    image: bitnami/airflow:2
+    container_name: airflow
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./dags:/opt/bitnami/airflow/dags
+      - ./data:/opt/bitnami/airflow/data
+    environment:
+      - AIRFLOW_EXECUTOR=SequentialExecutor
+      - AIRFLOW_LOAD_EXAMPLES=false
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgresql:5432/airflowdb
+    depends_on:
+      - mssql
+      - postgresql
+    restart: always
